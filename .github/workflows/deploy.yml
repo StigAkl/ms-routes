@@ -1,4 +1,4 @@
-name: Deploy to Digital Ocean
+name: Build and Deploy to Digital Ocean
 
 on:
   push:
@@ -6,20 +6,38 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Debugging SSH connection
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image
+        run: |
+          docker build -t myapp .
+          docker save myapp > myapp.tar
+
+      - name: Transfer Docker image to Digital Ocean
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DO_SSH_HOST }}
+          username: ${{ secrets.DO_SSH_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          source: "myapp.tar"
+          target: "/tmp"
+
+      - name: Load and Run Docker image on Digital Ocean
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DO_SSH_HOST }}
           username: ${{ secrets.DO_SSH_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            whoami
-            pwd
-            echo "Testing SSH connection"
-            mkdir test
-            cd test
-            git clone https://github.com/StigAkl/ms-routes.git
-            echo 'Success!'
+            docker load < /tmp/myapp.tar
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run --name myapp -d -p 5173:5173 myapp
