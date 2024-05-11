@@ -19,3 +19,7 @@ jobs:
             whoami
             pwd
             echo "Testing SSH connection"
+            mkdir test
+            cd test
+            git clone git@github.com:StigAkl/ms-routes.git
+            echo 'Success!'
