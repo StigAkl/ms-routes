@@ -21,5 +21,5 @@ jobs:
             echo "Testing SSH connection"
             mkdir test
             cd test
-            git clone git@github.com:StigAkl/ms-routes.git
+            git clone https://github.com/StigAkl/ms-routes.git
             echo 'Success!'
