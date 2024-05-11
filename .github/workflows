@@ -1,0 +1,38 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t myapp .
+
+      - name: Copy Docker image to Digital Ocean
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DO_SSH_HOST }}
+          username: ${{ secrets.DO_SSH_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          source: "myapp.tar"
+          target: "/home/${{ secrets.DO_SSH_USERNAME }}"
+
+      - name: Deploy Docker image on Digital Ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            mkdir test
+            cd test
+            git clone git@github.com:StigAkl/ms-routes.git
+            echo 'Deployment successfull to DO'
