@@ -40,4 +40,4 @@ jobs:
             docker load < /tmp/myapp.tar
             docker stop myapp || true
             docker rm myapp || true
-            docker run --name myapp -d -p 5173:5173 myapp
+            docker run --name myapp -d -p 5174:5174 myapp
